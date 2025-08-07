@@ -16,3 +16,14 @@ alias kx='kubectl exec -it'       # 파드에서 명령어 실행
 alias kr='kubectl rollout'        # 배포 롤아웃 관리
 alias ks='kubectl get services'   # 서비스 목록 조회
 alias ksc='kubectl get configmaps' # ConfigMap 목록 조회
+alias kgpa='kubectl get pod --all-namespaces'
+alias kgp='kubectl get pod'
+alias kd='kubectl describe'
+alias kdel='kubectl delete'
+alias kcg='kubectl config get-contexts'
+alias kcu='kubectl config use-context'
+export PATH=$PATH:/usr/local/go/bin
+
+# 한글 깨질때
+export LANG=ko_KR.UTF-8
+export LC_ALL=ko_KR.UTF-8 
