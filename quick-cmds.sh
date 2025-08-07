@@ -5,7 +5,7 @@ cd() {
 alias ..='cd ..'           # 상위 디렉토리로 이동
 alias ...='cd ../..'       # 두 단계 상위 디렉토리로 이동
 alias h='history'          # 최근 명령어 조회
-
+alias c='clear'  #         # 터미널 로그 지우기
 # k8s
 alias k='kubectl'
 alias kg='kubectl get'
