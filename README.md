@@ -1,57 +1,106 @@
 ﻿# Easy Ubuntu
 ## 1. quick-cmds.sh
-**Quick-Cmds**는 Kubernetes와 Ubuntu 명령어의 유용한 단축키 및 팁을 모아둔 레포지토리입니다. 자주 사용하는 명령어를 빠르게 찾고 기억할 수 있도록 돕기 위해 설계되었습니다.
+**Quick-Cmds**는 Kubernetes와 Ubuntu 작업을 빠르게 하기 위한 alias/함수 모음입니다.
 
 ## 설정 방법
 
-이 레포지토리의 설정을 위해 아래의 내용을 `.bashrc` 또는 `.bash_profile` 파일에 추가하세요.
+아래 내용을 `~/.bashrc` 또는 `~/.bash_profile`에 추가하세요.
 
 ```bash
-vi ~/.bashrc
+# quick-cmds.sh 경로는 환경에 맞게 수정
+source /home/etri/jinuk/Easy-Kube-Command/quick-cmds.sh
 ```
-입력후
+
+적용:
+
 ```bash
 source ~/.bashrc
 ```
 
 ### 설명 및 사용법
 
-1. **`cd` 함수**:
-   - 디렉토리 변경 후 자동으로 현재 디렉토리의 내용을 리스트로 보여줍니다.
-   - 사용 예시:
-     ```bash
-     cd /path/to/directory
-     ```
+#### 기본 쉘 편의 기능
 
-2. **Alias 목록**:
-   - **`..`**: 상위 디렉토리로 이동합니다.
-     ```bash
-     ..
-     ```
-   - **`...`**: 두 단계 상위 디렉토리로 이동합니다.
-     ```bash
-     ...
-     ```
-   - **`h`**: 최근 명령어를 조회합니다.
-     ```bash
-     h
-     ```
+- `cd`: 디렉토리 이동 후 자동으로 `ls` 실행
+  ```bash
+  cd /path/to/dir
+  ```
+- `..`: 상위 디렉토리 이동
+- `...`: 상위 2단계 디렉토리 이동
+- `h`: `history` 조회
+- `c`: `clear`
 
+#### Kubernetes 기본 단축어
 
-### Kubernetes
+- `k`: `kubectl`
+- `kg`: `kubectl get`
+- `kga`: `kubectl get all`
+- `kgp`: `kubectl get pod`
+- `kgpa`: `kubectl get pod --all-namespaces`
+- `kd`: `kubectl describe`
+- `kf`: `kubectl apply -f`
+- `kx`: `kubectl exec -it`
+- `kr`: `kubectl rollout`
+- `ks`: `kubectl get services`
+- `ksc`: `kubectl get configmaps`
+- `kdel`: `kubectl delete`
+- `kcg`: `kubectl config get-contexts`
+- `kcu`: `kubectl config use-context`
 
-- **`k`**: `kubectl`의 약어
-- **`kg`**: `kubectl get` - 리소스 조회
-- **`kga`**: `kubectl get all` - 현재 네임스페이스의 모든 리소스 조회
-- **`kd`**: `kubectl describe` - 리소스에 대한 자세한 정보 조회
-- **`kf`**: `kubectl apply -f` - YAML 파일을 사용하여 리소스 적용
-- **`kx`**: `kubectl exec -it` - 파드에서 명령어 실행
-- **`kr`**: `kubectl rollout` - 배포 롤아웃 관리
-- **`kgs`**: `kubectl get services` - 서비스 목록 조회
-- **`kgc`**: `kubectl get configmaps` - ConfigMap 목록 조회  
-  
-&nbsp;
+예시:
 
+```bash
+kg pod -n kube-system
+kf deployment.yaml
+kx <pod-name> -- /bin/bash
+kcu my-cluster-context
+```
+
+#### Kedge 프로필 헬퍼
+
+프로필별로 라벨/테인트를 빠르게 적용하는 함수입니다.
+
+- 지원 프로필: `edge`, `cloud`, `gpu`
+- 매핑:
+  - `edge` -> label: `node-role.kubernetes.io/edge`, taint: `dedicated=edge:NoSchedule`
+  - `cloud` -> label: `node-role.kubernetes.io/control-plane`, taint: `dedicated=cloud:NoSchedule`
+  - `gpu` -> label: `nvidia.com/gpu.present`, taint: `dedicated=gpu:NoSchedule`
+
+노드 라벨/테인트:
+
+- `kl <node> <profile>`: 프로필 라벨 추가(덮어쓰기)
+- `kdl <node> <profile>`: 프로필 라벨 제거
+- `kt <node> <profile>`: 프로필 테인트 추가(덮어쓰기)
+- `kut <node> <profile>`: 프로필 테인트 제거
+
+예시:
+
+```bash
+kl worker-1 edge
+kt worker-1 edge
+kdl worker-1 edge
+kut worker-1 edge
+```
+
+워크로드 pin/unpin:
+
+- `kpin <kind> <name> <profile> -n <namespace>`
+  - `spec.template.spec.affinity`와 `tolerations`를 patch해서 해당 프로필 노드로 스케줄되도록 고정
+- `kunpin <kind> <name> <profile> -n <namespace>`
+  - `affinity`만 제거
+  - 현재 스크립트는 toleration 자동 제거를 하지 않음(메시지로 안내)
+
+예시:
+
+```bash
+kpin deploy my-app edge -n default
+kunpin deploy my-app edge -n default
+```
+
+주의:
+
+- `kpin`/`kunpin`은 `Deployment`, `StatefulSet`, `DaemonSet`처럼 `spec.template`이 있는 리소스에서 사용해야 합니다.
+- 잘못된 profile 입력 시 `unknown profile` 에러가 발생합니다.
 
 
 ## 2. install-docker.sh
@@ -71,4 +120,3 @@ source ~/.bashrc
 8. **사용자를 Docker 그룹에 추가**: Docker 명령어를 sudo 없이 사용할 수 있도록 현재 사용자를 Docker 그룹에 추가합니다.
 
 스크립트를 실행한 후, 사용자는 로그아웃하고 다시 로그인하여 Docker를 사용할 수 있습니다.
-
